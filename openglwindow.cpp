@@ -39,13 +39,12 @@
 ****************************************************************************/
 
 #include "openglwindow.h"
+
 #include <QtCore/QCoreApplication>
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
-#include <iostream>
-using namespace std;
 
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
@@ -137,3 +136,10 @@ void OpenGLWindow::renderNow()
 
 }
 
+void OpenGLWindow::newConnection(){
+
+}
+
+void OpenGLWindow::changeSeason(){
+
+}

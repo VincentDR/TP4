@@ -1,59 +1,103 @@
 #include "trianglewindow.h"
-
-#include <QtGui/QGuiApplication>
-#include <QtGui/QMatrix4x4>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QScreen>
-
-#include <QtCore/qmath.h>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <time.h>
-#include <sys/time.h>
-#include <iostream>
-
-#include <QtCore>
-#include <QtGui>
-
-//#include <omp.h>
-
-using namespace std;
-
+#include "filemanager.h"
+#include "ply.h"
 
 int main(int argc, char **argv)
 {
+
+
+
     srand(time(NULL));
     QGuiApplication app(argc, argv);
-    
+
     QSurfaceFormat format;
     format.setSamples(16);
-    
+
     paramCamera* c=new paramCamera();
-    
-    QTimer* calendar = new QTimer;
+    FileManager fm = FileManager();
 
-    TriangleWindow* window[4];
-    for(int i = 0; i < 4; i++)
-    {
-        if (i == 0)
-            window[i] = new TriangleWindow();
-        else
-            window[i] = new TriangleWindow(30);
-        window[i]->setSeason(i);
-        window[i]->c = c;
-        window[i]->setFormat(format);
-        window[i]->resize(500,375);
-        int x = i%2;
-        int y = i>>1;
-                
-        window[i]->setPosition(x*500,y*450);
-        window[i]->show();
+    int nbFenetres = 4;
+    TriangleWindow** windows;
+    windows = (TriangleWindow**) malloc(sizeof(TriangleWindow*) * nbFenetres);
+    int posX = 0;
+    int posY = 0;
+    bool changX = true;
 
-        calendar->connect(calendar, SIGNAL(timeout()),window[i], SLOT(updateSeason()));
+    bool chargement = false;
+
+    switch(chargement){
+    case false:
+        for(int i =0; i < nbFenetres; i++){
+            Ply* poly = new Ply("autumntree.ply");
+            poly->setTaille(0.025);
+            poly->setPosX(0);poly->setPosY(0);poly->setPosZ(0);
+            poly->setRotX(45);poly->setRotY(0);poly->setRotZ(0);
+
+
+            Ply* poly2 = new Ply("autumntree.ply");
+            poly2->setTaille(0.025);
+            poly2->setPosX(-5);poly2->setPosY(0);poly2->setPosZ(0);
+            poly2->setRotX(0);poly2->setRotY(0);poly2->setRotZ(0);
+
+            Ply* poly3 = new Ply("autumntree.ply");
+            poly3->setTaille(0.025);
+            poly3->setPosX(5);poly3->setPosY(0);poly3->setPosZ(0);
+            poly3->setRotX(0);poly3->setRotY(0);poly3->setRotZ(0);
+
+            if(i == 0){//serveur
+                windows[i] =  new TriangleWindow();
+            }else{
+                windows[i] = new TriangleWindow(20);
+            }
+            windows[i]->c = c;
+            windows[i]->setFormat(format);
+            windows[i]->resize(500,375);
+            if(changX){
+                changX = !changX;
+                windows[i]->setPosition(posX, posY);
+                posX += 500;
+            }else{
+                changX = !changX;
+                windows[i]->setPosition(posX, posY);
+                posY += 375;
+                posX = 0;
+            }
+
+            windows[i]->addPolygone(poly);
+            windows[i]->addPolygone(poly2);
+            windows[i]->addPolygone(poly3);
+            windows[i]->setSeason(i%4, false);
+            windows[i]->show();
+        }
+
+
+        fm.saveCustomMap("Test.txt", windows,nbFenetres);
+        break;
+    case true:
+        TriangleWindow** tw = fm.loadCustomMap("Test.txt");
+        for(int i = 0; i < fm.getNbFenetres(); i++){
+            tw[i]->setFormat(format);
+            tw[i]->resize(500,375);
+            if(changX){
+                changX = !changX;
+                tw[i]->setPosition(posX, posY);
+                posX += 500;
+            }else{
+                changX = !changX;
+                tw[i]->setPosition(posX, posY);
+                posY += 375;
+                posX = 0;
+            }
+            tw[i]->show();
+        }
+        break;
     }
-    
-    calendar->start(20);
+
+
+
+
+
+
 
     return app.exec();
 }
-
